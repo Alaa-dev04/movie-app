@@ -52,7 +52,15 @@ const Header = () => {
         staleTime: 60_000,
         select: (data) => data.results,
     });
- 
+    const handleSreachClick = () => {
+    if (isSearchOpen && suggestions.length > 0) {
+        setIsSearchOpen(false)
+        setSearchTerm("")
+    } else if (searchTerm.trim()) {
+        setIsSearchOpen(true)
+        fetchSuggestions(searchTerm)
+    }
+}
     return (
         <div>
             <motion.header
@@ -91,9 +99,12 @@ const Header = () => {
                             type="text "
                             placeholder="quick shearch"
                             className="w-full px-4 py-1.5 lg:py-3 bg-white text-sm text-gray-500 focus:outline-none placeholder-gray-500
-                rounded-xl border border-gray-500 focus:border-white pr-10"
+                            rounded-xl border border-gray-500 focus:border-white pr-10"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+
                         />
-                        <button className="absolute right-3 top-1/3 transform -translate-y-1/2 cursor-default">
+                        <button className="absolute right-3 top-1/3 transform -translate-y-1/2 cursor-default "onClick={handleSreachClick}>
                             <Search className="w-5 h-5 text-gray-500" />
                         </button>
                     </motion.div>
