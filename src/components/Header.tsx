@@ -4,9 +4,20 @@ import { motion } from "motion/react"
 import Link from "next/link";
 import { Menu, Search, X } from 'lucide-react';
 import { useState } from "react";
+import { useQueryState } from "nuqs";
+import { useDebounce } from "use-debounce";
+import { useQuery } from "@tanstack/react-query";
+
 const Header = () => {
     const pathname = usePathname();
     const [isMenuOpen,setIsMenuOpen]=useState(false);
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [searchTerm, setSearchTerm] = useQueryState("q",{
+       defaultValue: "",
+       shallow:true,
+       history:"replace"
+    });
+    const [debouncedTerm] = useDebounce(searchTerm, 400);
     const Links = [
         {name:"Home",href:"/"},
         {name:"Movies",href:"/movies"},
@@ -38,7 +49,8 @@ const Header = () => {
             onClick={()=>setIsMenuOpen(!isMenuOpen)}
             whileTap={{scale:0.9}}
             >
-                {isMenuOpen ? (<X className="w-6 h-6 "/> )
+                {isMenuOpen ? 
+                (<X className="w-6 h-6 "/> )
                 :
                 ( <Menu className="w-6 h-6 "/>)}
             </motion.button>
@@ -70,9 +82,7 @@ const Header = () => {
                     className="absolute left-0 right-0 bottom-0 h-0.5 bg-yellow-400"
                     layoutId="underline"
                     transition={{duration:0.3}}
-                    />
-
-                    
+                    /> 
                  )}
                 </Link>
             ))}
