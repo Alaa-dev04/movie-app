@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import Providers from "@/components/Providers"
 import "./globals.css";
 import Header from "@/components/Header";
+import HeroSection from "@/components/HeroSection";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -27,6 +28,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body >
         <Providers>
           <Header/>
+          <HeroSection/>
           {children}
         </Providers>
         </body>
