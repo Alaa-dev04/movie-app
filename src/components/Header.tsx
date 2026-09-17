@@ -1,20 +1,23 @@
 "use client";
 import { usePathname } from "next/navigation"
-import { motion } from "motion/react"
+import { AnimatePresence, motion } from "motion/react"
 import Link from "next/link";
 import { Menu, Search, X } from 'lucide-react';
 import { useState } from "react";
 import { useQueryState } from "nuqs";
 import { useDebounce } from "use-debounce";
 import { useQuery } from "@tanstack/react-query";
+import Image from "next/image";
 
 interface SearchResult {
     id: number;
-    mediaType: "movie" | "tv";
-    title: string;
-    posterPath: string;
-    releaseDate: string | null;
-    rating: number | null;
+    media_type: "movie" | "tv";
+    title?: string;
+    name?: string;
+    poster_path: string | null;
+    release_date?: string;
+    first_air_date?: string;
+    vote_average?: number;
 }
 
 interface SearchResponse {
@@ -53,14 +56,14 @@ const Header = () => {
         select: (data) => data.results,
     });
     const handleSreachClick = () => {
-    if (isSearchOpen && suggestions.length > 0) {
-        setIsSearchOpen(false)
-        setSearchTerm("")
-    } else if (searchTerm.trim()) {
-        setIsSearchOpen(true)
-        fetchSuggestions(searchTerm)
+        if (isSearchOpen && suggestions.length > 0) {
+            setIsSearchOpen(false)
+            setSearchTerm("")
+        } else if (searchTerm.trim()) {
+            setIsSearchOpen(true)
+            fetchSuggestions(searchTerm)
+        }
     }
-}
     return (
         <div>
             <motion.header
@@ -104,9 +107,67 @@ const Header = () => {
                             onChange={(e) => setSearchTerm(e.target.value)}
 
                         />
-                        <button className="absolute right-3 top-1/3 transform -translate-y-1/2 cursor-default "onClick={handleSreachClick}>
-                            <Search className="w-5 h-5 text-gray-500" />
+                        <button className="absolute right-3 top-1/3 transform -translate-y-1/2 cursor-default " onClick={handleSreachClick}>
+                            {isLoading ?
+                                (<div className="w-5 h-5 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin" />)
+                                :
+                                isSearchOpen && suggestions.length > 0 ? (
+                                    <X className="w-5 h-5 text-gray-500" />
+                                ) : (
+                                    <Search className="w-5 h-5 text-gray-500" />
+                                )
+
+                            }
+
                         </button>
+                        {/* animate suggustion dropdown   */}
+                        {searchTerm.trim().length > 0 && (
+                            <AnimatePresence>
+                                <motion.div
+                                    className="absolute top-full mt-1 w-full bg-[#18181b] border border-gary-500 rounded-lg shadow-lg z-50"
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                    transition={{ duration: 0.2 }}
+                                >
+                                    {isLoading ? (
+                                        <div className="p-2 text-sm text-gray-400 text-center">
+                                            Loading...
+                                        </div>
+                                    ) : suggestions.length > 0 ? (
+                                        suggestions.map((item) => (
+                                            <Link key={item.id} href={"/"}>
+                                                <div className="flex item-center gap-2 p-2 hover:bg-[#252525] rounded-lg cursor-pointer">
+                                                    <Image
+                                                        src={
+                                                            item.poster_path
+                                                                ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
+                                                                : "/default_poster.jpg"
+                                                        }
+                                                        alt="poster"
+                                                        width={32}
+                                                        height={48}
+                                                        className="w-8 aspect-[2/3] object-cover rounded"
+                                                    />
+                                                    <div className="flex-1">
+                                                        <h3 className="text-sm text-white line-clamp-2 h-10">
+                                                            {item.title || item.name || "unnamed"}
+                                                        </h3>
+                                                        <p>
+                                                            {(item.release_date || item.first_air_date)?.split("-")[0] || "n/a"}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </Link>
+                                        ))
+                                    ) : (
+                                        <div className="p-2 text-sm text-gray-400 text-center">
+                                            No Result Found
+                                        </div>
+                                    )}
+                                </motion.div>
+                            </AnimatePresence>
+                        )}
                     </motion.div>
                     {/* navigation links */}
                     <nav className="hidden md:flex md:items-center md:space-x-6">
@@ -136,7 +197,7 @@ const Header = () => {
                     animate={isMenuOpen ? { y: 0, opacity: 1 } : { y: -20, opacity: 0 }}
                     transition={{ duration: 0.3 }}
                 >
-                    {/* search bar  */}
+                    {/* mobile  search bar  */}
                     <motion.div className="relative w-full mb-4 ">
                         <input
                             type="text "
@@ -146,9 +207,66 @@ const Header = () => {
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
-                        <button className="absolute right-3 top-1/3 transform -translate-y-1/2 cursor-pointer">
-                            <Search className="w-5 h-5 text-gray-500" />
+                        <button className="absolute right-3 top-1/3 transform -translate-y-1/2 cursor-pointer " onClick={handleSreachClick}>
+                            {isLoading ?
+                                (<div className="w-5 h-5 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin" />)
+                                :
+                                isSearchOpen && suggestions.length > 0 ? (
+                                    <X className="w-5 h-5 text-gray-500" />
+                                ) : (
+                                    <Search className="w-5 h-5 text-gray-500" />
+                                )
+
+                            }
+
                         </button>
+                        {searchTerm.trim().length > 0 && (
+                            <AnimatePresence>
+                                <motion.div
+                                    className="absolute top-full mt-1 w-full bg-[#18181b] border border-gary-500 rounded-lg shadow-lg z-50"
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                    transition={{ duration: 0.2 }}
+                                >
+                                    {isLoading ? (
+                                        <div className="p-2 text-sm text-gray-400 text-center">
+                                            Loading...
+                                        </div>
+                                    ) : suggestions.length > 0 ? (
+                                        suggestions.map((item) => (
+                                            <Link key={item.id} href={"/"}>
+                                                <div className="flex item-center gap-2 p-2 hover:bg-[#252525] rounded-lg cursor-pointer">
+                                                    <Image
+                                                        src={
+                                                            item.poster_path
+                                                                ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
+                                                                : "/default_poster.jpg"
+                                                        }
+                                                        alt="poster"
+                                                        width={32}
+                                                        height={48}
+                                                        className="w-8 aspect-[2/3] object-cover rounded"
+                                                    />
+                                                    <div className="flex-1">
+                                                        <h3 className="text-sm text-white line-clamp-2 h-10">
+                                                            {item.title || item.name || "unnamed"}
+                                                        </h3>
+                                                        <p>
+                                                            {(item.release_date || item.first_air_date)?.split("-")[0] || "n/a"}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </Link>
+                                        ))
+                                    ) : (
+                                        <div className="p-2 text-sm text-gray-400 text-center">
+                                            No Result Found
+                                        </div>
+                                    )}
+                                </motion.div>
+                            </AnimatePresence>
+                        )}
                     </motion.div>
                     {/* navigation links mobile */}
                     <nav className="flex flex-col items-center gap-2">
