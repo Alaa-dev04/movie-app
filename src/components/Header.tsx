@@ -109,7 +109,7 @@ const Header = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
             <button
-              className="absolute right-3 top-1/3 transform -translate-y-1/2 cursor-default "
+              className="absolute right-3 top-1/3 transform lg:-translate-y-1/2 md:-translate-y-5 cursor-default "
               onClick={handleSreachClick}
             >
               {isLoading ? (
