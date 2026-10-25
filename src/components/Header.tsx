@@ -41,7 +41,7 @@ const Header = () => {
   });
   const [debouncedTerm] = useDebounce(searchTerm, 400);
   const Links = [
-    { name: "Home", href: "/" },
+    { name: "Home", href: "/home" },
     { name: "Movies", href: "/movies" },
     { name: "TV-series", href: "/tv-series" },
   ];

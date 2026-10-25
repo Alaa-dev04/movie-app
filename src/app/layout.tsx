@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono ,  Source_Serif_4 } from "next/font/google";
+import { Geist, Geist_Mono, Source_Serif_4 } from "next/font/google";
 import Providers from "@/components/Providers"
 import "./globals.css";
 import Header from "@/components/Header";
-import HeroSection from "@/components/HeroSection";
-import TrendingMovies from  "@/components/TrendingMovies";
-import TrendingSeries from "@/components/TrendingSeries";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -30,15 +28,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body  className={`${sourceSerif.className} bg-black`}>
+      <body className={`${sourceSerif.className} bg-black`}>
         <Providers>
-          <Header/>
-          <HeroSection/>
-          <TrendingMovies/>
-          <TrendingSeries/>
+          <Header />
           {children}
         </Providers>
-        </body>
+      </body>
     </html>
   );
 }
