@@ -1,4 +1,3 @@
-// Save as: src/app/api/top-rated/route.ts
 import { NextResponse } from "next/server";
 
 const TYPES = ["movie", "tv"] as const;
@@ -29,7 +28,6 @@ export async function GET(req: Request) {
   try {
     const res = await fetch(
       `https://api.themoviedb.org/3/${type}/top_rated?api_key=${apiKey}&language=en-US&page=${page}`,
-      // The top rated list changes slowly, so cache it for a day.
       { next: { revalidate: 86400 } },
     );
 
@@ -38,8 +36,6 @@ export async function GET(req: Request) {
     }
 
     const data = await res.json();
-
-    // /movie/top_rated and /tv/top_rated don't include media_type, so add it.
     const results = (data.results ?? []).map(
       (item: Record<string, unknown>) => ({
         ...item,
