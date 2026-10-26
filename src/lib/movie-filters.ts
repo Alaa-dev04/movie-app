@@ -1,4 +1,4 @@
-import { parseAsString } from "nuqs";
+import { parseAsString , parseAsInteger} from "nuqs";
 
 export type Filters = {
   term: string;
@@ -7,6 +7,7 @@ export type Filters = {
   rating: string;
   language: string;
   sort: string;
+   page: number;
 };
 
 export const filterParsers = {
@@ -16,4 +17,5 @@ export const filterParsers = {
   rating: parseAsString.withDefault(""),
   language: parseAsString.withDefault(""),
   sort: parseAsString.withDefault(""),
+  page: parseAsInteger.withDefault(1),
 };

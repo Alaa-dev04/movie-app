@@ -1,27 +1,25 @@
+
 import "../globals.css";
-import { Geist, Geist_Mono, Source_Serif_4 } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
+
 const geistSans = Geist({
-    variable: "--font-geist-sans",
-    subsets: ["latin"],
-});
-const sourceSerif = Source_Serif_4({
-    subsets: ["latin"],
-    weight: ["400", "500", "600", "700"],
-});
-const geistMono = Geist_Mono({
-    variable: "--font-geist-mono",
-    subsets: ["latin"],
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
 });
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
-    return (
-        <html
-            lang="en"
-            className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-        >
-            <body className={`${sourceSerif.className} bg-black`}>
-                {children}
-            </body>
-        </html>
-    );
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+export default function HomeLayout({
+  children,
+}: LayoutProps<"/home">) {
+  return (
+    <div
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+    >
+      {children}
+    </div>
+  );
 }

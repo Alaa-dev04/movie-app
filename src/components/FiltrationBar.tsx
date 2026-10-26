@@ -31,7 +31,7 @@ const FiltrationBar = () => {
     }
 
     return (
-        <div className="p-4 -bottom-20 relative">
+        <div className="p-4 -bottom-20 relative text-white ">
             <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-2 gap-4">
                 <div className="col-span-2">
                     <label className="font-bold">Search</label>
