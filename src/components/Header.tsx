@@ -43,7 +43,7 @@ const Header = () => {
   const Links = [
     { name: "Home", href: "/home" },
     { name: "Movies", href: "/movies" },
-    { name: "TV-series", href: "/tv-series" },
+    { name: "TV-series", href: "/tv" },
   ];
   const {
     data: suggestions = [],
