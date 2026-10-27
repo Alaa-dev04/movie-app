@@ -1,14 +1,14 @@
 "use client";
-import { usePathname } from "next/navigation";
-import { AnimatePresence, motion } from "motion/react";
-import Link from "next/link";
-import { Menu, Search, X } from "lucide-react";
-import { useState } from "react";
-import { useQueryState } from "nuqs";
-import { useDebounce } from "use-debounce";
-import { useQuery } from "@tanstack/react-query";
-import Image from "next/image";
 
+import { AnimatePresence, motion } from "motion/react";
+import { Menu, Search, X } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useQueryState } from "nuqs";
+import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useDebounce } from "use-debounce";
 
 interface SearchResult {
   id: number;
@@ -18,7 +18,6 @@ interface SearchResult {
   poster_path: string | null;
   release_date?: string;
   first_air_date?: string;
-  vote_average?: number;
 }
 
 interface SearchResponse {
@@ -30,263 +29,204 @@ async function fetchSuggestions(term: string): Promise<SearchResponse> {
   if (!res.ok) throw new Error("Search request failed");
   return res.json();
 }
-const Header = () => {
-  const pathname = usePathname();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+const LINKS = [
+  { name: "Home", href: "/home" },
+  { name: "Movies", href: "/movies" },
+  { name: "TV-series", href: "/tv" },
+];
+
+function SearchBox({ onSelect }: { onSelect?: () => void }) {
   const [searchTerm, setSearchTerm] = useQueryState("q", {
     defaultValue: "",
     shallow: true,
     history: "replace",
   });
   const [debouncedTerm] = useDebounce(searchTerm, 400);
-  const Links = [
-    { name: "Home", href: "/home" },
-    { name: "Movies", href: "/movies" },
-    { name: "TV-series", href: "/tv" },
-  ];
-  const {
-    data: suggestions = [],
-    isFetching: isLoading,
-    isError,
-  } = useQuery({
+
+  const { data: suggestions = [], isFetching } = useQuery({
     queryKey: ["suggestions", debouncedTerm],
     queryFn: () => fetchSuggestions(debouncedTerm),
-    enabled: debouncedTerm.length > 0,
+    enabled: debouncedTerm.trim().length > 0,
     staleTime: 60_000,
     select: (data) => data.results,
   });
-  const handleSreachClick = () => {
-    if (isSearchOpen && suggestions.length > 0) {
-      setIsSearchOpen(false);
-      setSearchTerm("");
-    } else if (searchTerm.trim()) {
-      setIsSearchOpen(true);
-      fetchSuggestions(searchTerm);
-    }
-  };
+
+  const hasTerm = searchTerm.trim().length > 0;
+
   return (
-    <div>
-      <motion.header
-        className="bg-transparent text-white w-full py-2 z-50 px-4 md:px-10 xl:px-36 absolute top-0 left-0"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
+    <div className="relative w-full">
+      <input
+        type="text"
+        placeholder="Quick search"
+        className="w-full rounded-xl border border-gray-500 bg-white px-4 py-2 pr-10 text-sm text-gray-700 placeholder-gray-500 focus:border-white focus:outline-none lg:py-2.5"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+      />
+      <button
+        type="button"
+        aria-label={hasTerm ? "Clear search" : "Search"}
+        className="absolute right-3 top-1/2 -translate-y-1/2"
+        onClick={() => hasTerm && setSearchTerm(null)}
       >
-        {/* desktop desigin section  */}
-        <div className="flex flex-col md:flex-row md:item-center md:justify-between gap-4 ">
-          {/* logo section  */}
-          <div className="flex  item-center justify-between w-full md:w-auto">
-            <Link href="/" className="flex flex-col item-center">
-              <span className="text-2xl md:text-xl lg:text-3xl font bold text-yellow-400">
-                TRENDY<span className="text-white">FLIX</span>
-              </span>
-              <span className="text-xs lg:text-base  text-white">
-                Movies and TV-Series
-              </span>
-            </Link>
-            {/* the mobile response */}
-            <motion.button
-              className="md:hidden text-white hover:text-white/80 cursor-pointer"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              whileTap={{ scale: 0.9 }}
-            >
-              {isMenuOpen ? (
-                <X className="w-6 h-6 " />
-              ) : (
-                <Menu className="w-6 h-6 " />
-              )}
-            </motion.button>
-          </div>
-          {/* search bar  */}
-          <motion.div className="relative w-full md:w-1/2 md:mx-8 hidden md:block ">
-            <input
-              type="text "
-              placeholder="quick shearch"
-              className="w-full px-4 py-1.5 lg:py-3 bg-white text-sm text-gray-500 focus:outline-none placeholder-gray-500
-                            rounded-xl border border-gray-500 focus:border-white pr-10"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <button
-              className="absolute right-3 top-1/3 transform lg:-translate-y-1/2 md:-translate-y-5 cursor-default "
-              onClick={handleSreachClick}
-            >
-              {isLoading ? (
-                <div className="w-5 h-5 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin" />
-              ) : isSearchOpen && suggestions.length > 0 ? (
-                <X className="w-5 h-5 text-gray-500" />
-              ) : (
-                <Search className="w-5 h-5 text-gray-500" />
-              )}
-            </button>
-            {/* animate suggustion dropdown   */}
-            {searchTerm.trim().length > 0 && (
-              <AnimatePresence>
-                <motion.div
-                  className="absolute top-full mt-1 w-full bg-[#18181b] border border-gary-500 rounded-lg shadow-lg z-50"
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  {isLoading ? (
-                    <div className="p-2 text-sm text-gray-400 text-center">
-                      Loading...
-                    </div>
-                  ) : suggestions.length > 0 ? (
-                    suggestions.map((item) => (
-                      <Link key={item.id} href={"/"}>
-                        <div className="flex item-center gap-2 p-2 hover:bg-[#252525] rounded-lg cursor-pointer">
-                          <Image
-                            src={
-                              item.poster_path
-                                ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
-                                : "/default_poster.jpg"
-                            }
-                            alt="poster"
-                            width={32}
-                            height={48}
-                            className="w-8 aspect-[2/3] object-cover rounded"
-                          />
-                          <div className="flex-1">
-                            <h3 className="text-sm text-white line-clamp-2 h-10">
-                              {item.title || item.name || "unnamed"}
-                            </h3>
-                            <p>
-                              {(
-                                item.release_date || item.first_air_date
-                              )?.split("-")[0] || "n/a"}
-                            </p>
-                          </div>
-                        </div>
-                      </Link>
-                    ))
-                  ) : (
-                    <div className="p-2 text-sm text-gray-400 text-center">
-                      No Result Found
-                    </div>
-                  )}
-                </motion.div>
-              </AnimatePresence>
-            )}
-          </motion.div>
-          {/* navigation links */}
-          <nav className="hidden md:flex md:items-center md:space-x-6">
-            {Links.map((link) => (
-              <Link
-                key={link.name}
-                href={link.href}
-                className={`text-xs sm:text-base font-medium relative text-white ${pathname === link.href ? "text-white " : "hover:text-white/80"}
-               `}
-              >
-                {link.name}
-                {/* underline animation for active links */}
-                {pathname === link.href && (
-                  <motion.span
-                    className="absolute left-0 right-0 bottom-0 h-0.5 bg-yellow-400"
-                    layoutId="underline"
-                    transition={{ duration: 0.3 }}
-                  />
-                )}
-              </Link>
-            ))}
-          </nav>
-        </div>
-        {/* mobile menu */}
+        {isFetching ? (
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-yellow-400 border-t-transparent" />
+        ) : hasTerm ? (
+          <X className="h-5 w-5 text-gray-500" />
+        ) : (
+          <Search className="h-5 w-5 text-gray-500" />
+        )}
+      </button>
+
+      {hasTerm && (
         <motion.div
-          className={`md:hidden backdrop-blur-xs bg-black/20 z-50 absolute left-0 w-full px-4 py-4 ${isMenuOpen ? "block" : "hidden"}`}
-          initial={{ y: -20, opacity: 0 }}
-          animate={isMenuOpen ? { y: 0, opacity: 1 } : { y: -20, opacity: 0 }}
-          transition={{ duration: 0.3 }}
+          className="absolute left-0 right-0 top-full z-50 mt-1 max-h-[60vh] overflow-y-auto rounded-lg border border-gray-700 bg-[#18181b] shadow-lg"
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.15 }}
         >
-          {/* mobile  search bar  */}
-          <motion.div className="relative w-full mb-4 ">
-            <input
-              type="text "
-              placeholder="quick shearch"
-              className="w-full px-4 py-2 bg-white text-sm text-gray-500 focus:outline-none placeholder-gray-500
-                            rounded-xl border border-gray-500 focus:border-white pr-10"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <button
-              className="absolute right-3 top-1/3 transform -translate-y-1/2 cursor-pointer "
-              onClick={handleSreachClick}
-            >
-              {isLoading ? (
-                <div className="w-5 h-5 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin" />
-              ) : isSearchOpen && suggestions.length > 0 ? (
-                <X className="w-5 h-5 text-gray-500" />
-              ) : (
-                <Search className="w-5 h-5 text-gray-500" />
-              )}
-            </button>
-            {searchTerm.trim().length > 0 && (
-              <AnimatePresence>
-                <motion.div
-                  className="absolute top-full mt-1 w-full bg-[#18181b] border border-gary-500 rounded-lg shadow-lg z-50"
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  {isLoading ? (
-                    <div className="p-2 text-sm text-gray-400 text-center">
-                      Loading...
-                    </div>
-                  ) : suggestions.length > 0 ? (
-                    suggestions.map((item) => (
-                      <Link key={item.id} href={"/"}>
-                        <div className="flex item-center gap-2 p-2 hover:bg-[#252525] rounded-lg cursor-pointer">
-                          <Image
-                            src={
-                              item.poster_path
-                                ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
-                                : "/default_poster.jpg"
-                            }
-                            alt="poster"
-                            width={32}
-                            height={48}
-                            className="w-8 aspect-[2/3] object-cover rounded"
-                          />
-                          <div className="flex-1">
-                            <h3 className="text-sm text-white line-clamp-2 h-10">
-                              {item.title || item.name || "unnamed"}
-                            </h3>
-                            <p>
-                              {(
-                                item.release_date || item.first_air_date
-                              )?.split("-")[0] || "n/a"}
-                            </p>
-                          </div>
-                        </div>
-                      </Link>
-                    ))
-                  ) : (
-                    <div className="p-2 text-sm text-gray-400 text-center">
-                      No Result Found
-                    </div>
-                  )}
-                </motion.div>
-              </AnimatePresence>
-            )}
-          </motion.div>
-          {/* navigation links mobile */}
-          <nav className="flex flex-col items-center gap-2">
-            {Links.map((link) => (
+          {isFetching ? (
+            <div className="p-3 text-center text-sm text-gray-400">Loading...</div>
+          ) : suggestions.length > 0 ? (
+            suggestions.map((item) => (
               <Link
-                key={link.name}
-                href={link.href}
-                className="text-base font-medium relative text-white block hover:text-white/80"
+                key={`${item.media_type}-${item.id}`}
+                href={`/details?id=${item.id}&media_type=${item.media_type}`}
+                onClick={() => {
+                  setSearchTerm(null);
+                  onSelect?.();
+                }}
+                className="flex items-center gap-3 rounded-lg p-2 hover:bg-[#252525]"
               >
-                {link.name}
+                <Image
+                  src={
+                    item.poster_path
+                      ? `https://image.tmdb.org/t/p/w185${item.poster_path}`
+                      : "/default_poster.jpg"
+                  }
+                  alt=""
+                  width={32}
+                  height={48}
+                  className="aspect-[2/3] w-8 shrink-0 rounded object-cover"
+                />
+                <div className="min-w-0 flex-1">
+                  <h3 className="line-clamp-2 text-sm text-white">
+                    {item.title || item.name || "Unnamed"}
+                  </h3>
+                  <p className="text-xs text-gray-400">
+                    {(item.release_date || item.first_air_date)?.split("-")[0] || "N/A"}
+                  </p>
+                </div>
               </Link>
-            ))}
-          </nav>
+            ))
+          ) : (
+            <div className="p-3 text-center text-sm text-gray-400">No results found</div>
+          )}
         </motion.div>
-      </motion.header>
+      )}
     </div>
+  );
+}
+
+const Header = () => {
+  const pathname = usePathname();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  // close the mobile menu whenever the route changes (also covers back/forward)
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [pathname]);
+
+  return (
+    <motion.header
+      className="absolute inset-x-0 top-0 z-50 px-4 py-2 text-white md:px-10 xl:px-36"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
+      <div className="flex items-center justify-between gap-4">
+        {/* logo */}
+        <Link href="/" className="flex shrink-0 flex-col">
+          <span className="text-2xl font-bold text-yellow-400 lg:text-3xl">
+            TRENDY<span className="text-white">FLIX</span>
+          </span>
+          <span className="text-xs text-white lg:text-sm">Movies and TV-Series</span>
+        </Link>
+
+        {/* desktop search */}
+        <div className="hidden max-w-md flex-1 md:block lg:max-w-xl">
+          <SearchBox />
+        </div>
+
+        {/* desktop nav */}
+        <nav className="hidden shrink-0 items-center gap-4 md:flex lg:gap-6">
+          {LINKS.map((link) => (
+            <Link
+              key={link.name}
+              href={link.href}
+              className={`relative text-sm font-medium lg:text-base ${
+                pathname === link.href ? "text-white" : "text-white hover:text-white/80"
+              }`}
+            >
+              {link.name}
+              {pathname === link.href && (
+                <motion.span
+                  className="absolute inset-x-0 -bottom-0.5 h-0.5 bg-yellow-400"
+                  layoutId="underline"
+                  transition={{ duration: 0.3 }}
+                />
+              )}
+            </Link>
+          ))}
+        </nav>
+
+        {/* mobile toggle */}
+        <motion.button
+          type="button"
+          className="p-1 text-white hover:text-white/80 md:hidden"
+          onClick={() => setIsMenuOpen((o) => !o)}
+          whileTap={{ scale: 0.9 }}
+          aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+          aria-expanded={isMenuOpen}
+        >
+          {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+        </motion.button>
+      </div>
+
+      {/* mobile menu: mounted only while open, so it can't get stuck */}
+      <AnimatePresence>
+        {isMenuOpen && (
+          <motion.div
+            key="mobile-menu"
+            className="absolute inset-x-0 top-full z-50 border-t border-white/10 bg-neutral-950/95 px-4 py-4 shadow-xl md:hidden"
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.2 }}
+          >
+            <div className="mb-4">
+              <SearchBox onSelect={() => setIsMenuOpen(false)} />
+            </div>
+            <nav className="flex flex-col">
+              {LINKS.map((link) => (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  onClick={() => setIsMenuOpen(false)}
+                  className={`rounded-lg py-3 text-center text-base font-medium ${
+                    pathname === link.href
+                      ? "bg-white/10 text-yellow-400"
+                      : "text-white hover:bg-white/5"
+                  }`}
+                >
+                  {link.name}
+                </Link>
+              ))}
+            </nav>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.header>
   );
 };
 
