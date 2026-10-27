@@ -4,9 +4,9 @@ import { AnimatePresence, motion } from "motion/react";
 import { Menu, Search, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useQueryState } from "nuqs";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useDebounce } from "use-debounce";
 
@@ -36,7 +36,20 @@ const LINKS = [
   { name: "TV-series", href: "/tv" },
 ];
 
+function SearchFallback() {
+  return (
+    <div className="w-full">
+      <input
+        disabled
+        placeholder="Quick search"
+        className="w-full rounded-xl border border-gray-500 bg-white px-4 py-2 text-sm placeholder-gray-500 lg:py-2.5"
+      />
+    </div>
+  );
+}
+
 function SearchBox({ onSelect }: { onSelect?: () => void }) {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useQueryState("q", {
     defaultValue: "",
     shallow: true,
@@ -49,10 +62,18 @@ function SearchBox({ onSelect }: { onSelect?: () => void }) {
     queryFn: () => fetchSuggestions(debouncedTerm),
     enabled: debouncedTerm.trim().length > 0,
     staleTime: 60_000,
-    select: (data) => data.results,
+    select: (data) =>
+      data.results.filter(
+        (r) => r.media_type === "movie" || r.media_type === "tv"
+      ),
   });
 
   const hasTerm = searchTerm.trim().length > 0;
+
+  const goTo = (item: SearchResult) => {
+    router.push(`/details?id=${item.id}&media_type=${item.media_type}`);
+    onSelect?.();
+  };
 
   return (
     <div className="relative w-full">
@@ -62,6 +83,11 @@ function SearchBox({ onSelect }: { onSelect?: () => void }) {
         className="w-full rounded-xl border border-gray-500 bg-white px-4 py-2 pr-10 text-sm text-gray-700 placeholder-gray-500 focus:border-white focus:outline-none lg:py-2.5"
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && debouncedTerm === searchTerm && suggestions[0]) {
+            goTo(suggestions[0]);
+          }
+        }}
       />
       <button
         type="button"
@@ -92,10 +118,7 @@ function SearchBox({ onSelect }: { onSelect?: () => void }) {
               <Link
                 key={`${item.media_type}-${item.id}`}
                 href={`/details?id=${item.id}&media_type=${item.media_type}`}
-                onClick={() => {
-                  setSearchTerm(null);
-                  onSelect?.();
-                }}
+                onClick={() => onSelect?.()}
                 className="flex items-center gap-3 rounded-lg p-2 hover:bg-[#252525]"
               >
                 <Image
@@ -132,7 +155,6 @@ const Header = () => {
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // close the mobile menu whenever the route changes (also covers back/forward)
   useEffect(() => {
     setIsMenuOpen(false);
   }, [pathname]);
@@ -145,7 +167,6 @@ const Header = () => {
       transition={{ duration: 0.5 }}
     >
       <div className="flex items-center justify-between gap-4">
-        {/* logo */}
         <Link href="/" className="flex shrink-0 flex-col">
           <span className="text-2xl font-bold text-yellow-400 lg:text-3xl">
             TRENDY<span className="text-white">FLIX</span>
@@ -153,12 +174,12 @@ const Header = () => {
           <span className="text-xs text-white lg:text-sm">Movies and TV-Series</span>
         </Link>
 
-        {/* desktop search */}
         <div className="hidden max-w-md flex-1 md:block lg:max-w-xl">
-          <SearchBox />
+          <Suspense fallback={<SearchFallback />}>
+            <SearchBox />
+          </Suspense>
         </div>
 
-        {/* desktop nav */}
         <nav className="hidden shrink-0 items-center gap-4 md:flex lg:gap-6">
           {LINKS.map((link) => (
             <Link
@@ -180,7 +201,6 @@ const Header = () => {
           ))}
         </nav>
 
-        {/* mobile toggle */}
         <motion.button
           type="button"
           className="p-1 text-white hover:text-white/80 md:hidden"
@@ -193,7 +213,6 @@ const Header = () => {
         </motion.button>
       </div>
 
-      {/* mobile menu: mounted only while open, so it can't get stuck */}
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
@@ -205,7 +224,9 @@ const Header = () => {
             transition={{ duration: 0.2 }}
           >
             <div className="mb-4">
-              <SearchBox onSelect={() => setIsMenuOpen(false)} />
+              <Suspense fallback={<SearchFallback />}>
+                <SearchBox onSelect={() => setIsMenuOpen(false)} />
+              </Suspense>
             </div>
             <nav className="flex flex-col">
               {LINKS.map((link) => (
