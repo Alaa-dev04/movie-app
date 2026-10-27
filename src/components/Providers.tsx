@@ -1,5 +1,5 @@
 "use client";
-
+import { Suspense } from "react";
 import type { ReactNode } from "react";
 import {
   QueryClient,
@@ -16,11 +16,13 @@ export default function Providers({
   children: ReactNode;
 }) {
   return (
-    <NuqsAdapter>
-      <QueryClientProvider client={queryClient}>
-        {children}
-        <ReactQueryDevtools initialIsOpen={false} />
-      </QueryClientProvider>
-    </NuqsAdapter>
+    <Suspense fallback={null}>
+      <NuqsAdapter>
+        <QueryClientProvider client={queryClient}>
+          {children}
+          <ReactQueryDevtools initialIsOpen={false} />
+        </QueryClientProvider>
+      </NuqsAdapter>
+    </Suspense>
   );
 }
