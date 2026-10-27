@@ -68,7 +68,7 @@ export default function MovieGrid() {
       </div>
 
       {/* Pagination stays visible */}
-      <div className="relative top-30 bg-yellow-500/10">
+      <div className="relative top-30 bg-yellow-500/10 ">
         <AppPagination
           currentPage={filters.page}
           pageCount={data?.total_pages ?? 1}

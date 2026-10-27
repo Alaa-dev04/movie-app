@@ -5,7 +5,18 @@ import Image from "next/image";
 import { Star } from "lucide-react";
 import { useCallback, useState } from "react";
 import TrailerModal, { type TrailerMedia } from "@/components/Trailer";
+import { MovieCard } from "@/components/MoviesCard";
 type Media = "movie" | "tv";
+interface Recommendation {
+    id: number;
+    media_type: Media;
+    title?: string;
+    name?: string;
+    poster_path: string | null;
+    vote_average: number;
+    release_date?: string;
+    first_air_date?: string;
+}
 interface CastMember {
     id: number;
     name: string;
@@ -64,6 +75,17 @@ const DetialsPage = () => {
         },
     });
     const runtime = data?.runtime;
+
+
+    ///recommendation data fetching 
+    const { data: recs } = useQuery<{ results: Recommendation[] }>({
+        queryKey: ["recommendations", mediaType, id],
+        queryFn: async () => {
+            const res = await fetch(`/api/recommendation?items=${mediaType}:${id}`);
+            if (!res.ok) throw new Error("Failed to load recommendations");
+            return res.json();
+        }
+    });
     return (
         <div className="overflow-x-hidden text-white">
             <div className="relative h-[220px] w-full sm:h-[350px] md:h-[500px]">
@@ -163,7 +185,38 @@ const DetialsPage = () => {
                         ))}
                     </div>
                 </section>
-            </div>
+               
+            </div> 
+            {recs?.results?.length ? (
+                    <section className="flex flex-col gap-4 px-4 py-4 sm:px-8 sm:py-6 md:px-20 relative bottom-20">
+                        <h2 className="mb-4 text-center text-xl font-bold text-white sm:mb-5 sm:text-left sm:text-2xl">
+                            More like this
+                        </h2>
+                        <div className="flex flex-wrap justify-center gap-3 pb-4 sm:justify-start sm:gap-4">
+                            {recs.results.slice(0, 5).map((r) => (
+                                <MovieCard
+                                    key={`${r.media_type}-${r.id}`}
+                                    id={r.id}
+                                    mediaType={r.media_type}
+                                    title={r.title ?? r.name ?? "Untitled"}
+                                    poster={
+                                        r.poster_path
+                                            ? `https://image.tmdb.org/t/p/w500${r.poster_path}`
+                                            : "/default_poster.jpg"
+                                    }
+                                    rating={r.vote_average}
+                                    year={(r.release_date ?? r.first_air_date)?.split("-")[0] || "N/A"}
+                                    onTrailerClick={() =>
+                                        setTrailer({
+                                            id: r.id,
+                                            media_type: r.media_type,
+                                        })
+                                    }
+                                />
+                            ))}
+                        </div>
+                    </section>
+                ) : null}
             <TrailerModal media={trailer} onClose={closeTrailer} />
 
 

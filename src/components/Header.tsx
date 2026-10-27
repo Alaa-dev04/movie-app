@@ -79,7 +79,7 @@ const Header = () => {
           <div className="flex  item-center justify-between w-full md:w-auto">
             <Link href="/" className="flex flex-col item-center">
               <span className="text-2xl md:text-xl lg:text-3xl font bold text-yellow-400">
-                ALL MOVIES
+                TRENDY<span className="text-white">FLIX</span>
               </span>
               <span className="text-xs lg:text-base  text-white">
                 Movies and TV-Series

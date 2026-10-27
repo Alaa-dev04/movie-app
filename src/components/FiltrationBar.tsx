@@ -13,7 +13,8 @@ const genres = [
     { id: "10749", name: "Romance" },
     { id: "16", name: "Animation" },
 ];
-const selectClass = "w-full rounded-xl bg-[#252525] p-3 text-white";
+const selectClass = "w-full min-w-0 rounded-xl bg-[#252525] p-2.5 text-sm text-white sm:p-3 sm:text-base";
+const labelClass = "mb-1 block text-sm sm:text-base";
 
 const FiltrationBar = () => {
     const [applied, setApplied] = useQueryStates(filterParsers);
@@ -31,19 +32,19 @@ const FiltrationBar = () => {
     }
 
     return (
-        <div className="p-4 -bottom-20 relative text-white ">
-            <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-2 gap-4">
-                <div className="col-span-2">
-                    <label className="font-bold">Search</label>
+        <div className="relative -bottom-11 p-3 text-white sm:-bottom-12 sm:p-4 md:-bottom-20">
+            <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-6">
+                <div className="col-span-2 md:col-span-3 lg:col-span-6">
+                    <label className={`${labelClass} font-bold`}>Search</label>
                     <input
                         {...register("term")}
                         placeholder="Search ...."
-                        className="w-full rounded-xl bg-[#252525] p-3 text-white"
+                        className={selectClass}
                     />
                 </div>
 
                 <div>
-                    <label>Genre</label>
+                    <label className={labelClass}>Genre</label>
                     <select {...register("genre")} className={selectClass}>
                         <option value="">All</option>
                         {genres.map((g) => (
@@ -53,7 +54,7 @@ const FiltrationBar = () => {
                 </div>
 
                 <div>
-                    <label>Year</label>
+                    <label className={labelClass}>Year</label>
                     <select {...register("year")} className={selectClass}>
                         <option value="">All</option>
                         {years.map((y) => (
@@ -63,7 +64,7 @@ const FiltrationBar = () => {
                 </div>
 
                 <div>
-                    <label>Rating</label>
+                    <label className={labelClass}>Rating</label>
                     <select {...register("rating")} className={selectClass}>
                         <option value="">All</option>
                         <option value="9">9+</option>
@@ -74,7 +75,7 @@ const FiltrationBar = () => {
                 </div>
 
                 <div>
-                    <label>Language</label>
+                    <label className={labelClass}>Language</label>
                     <select {...register("language")} className={selectClass}>
                         <option value="">All</option>
                         <option value="en">English</option>
@@ -86,7 +87,7 @@ const FiltrationBar = () => {
                 </div>
 
                 <div>
-                    <label>Sort By</label>
+                    <label className={labelClass}>Sort By</label>
                     <select {...register("sort")} className={selectClass}>
                         <option value="">All</option>
                         <option value="popularity.desc">Popularity</option>
@@ -98,14 +99,14 @@ const FiltrationBar = () => {
                 <div className="flex items-end gap-2">
                     <button
                         type="submit"
-                        className="flex-1 rounded-xl bg-yellow-400 p-3 font-bold text-black"
+                        className="flex-1 rounded-xl bg-yellow-400 p-2.5 text-sm font-bold text-black sm:p-3 sm:text-base"
                     >
                         Search
                     </button>
                     <button
                         type="button"
                         onClick={onReset}
-                        className="rounded-xl border border-gray-500 p-3"
+                        className="rounded-xl border border-gray-500 p-2.5 text-sm sm:p-3 sm:text-base"
                     >
                         Reset
                     </button>

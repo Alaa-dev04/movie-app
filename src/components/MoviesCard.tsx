@@ -25,14 +25,14 @@ export function MovieCard({
   onTrailerClick,
 }: MovieCardProps) {
   return (
-    <Card className="group bg-gray-400/20 max-w-[300px] lg:h-[550px] md:h-[350px] sm:h-[300px]">
-      <div className="relative  overflow-hidden">
+    <Card className="group flex h-full w-full max-w-[300px] flex-col gap-0 overflow-hidden bg-gray-400/20 py-0">
+      <div className="relative overflow-hidden">
         <Image
           src={poster}
           alt={title}
           width={200}
           height={200}
-          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          className="aspect-[2/3] w-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
 
         {/* Dark gradient */}
@@ -47,26 +47,30 @@ export function MovieCard({
 
         {/* Trailer button (sits above the link) */}
         {onTrailerClick && (
-          <div className="absolute inset-x-0 bottom-4 z-10 flex justify-center px-4">
+          <div className="absolute inset-x-0 bottom-2 z-10 flex justify-center px-2 sm:bottom-4 sm:px-4">
             <Button
               variant="trailer"
               size="sm"
               onClick={onTrailerClick}
-              className="opacity-0 translate-y-2 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:translate-y-0"
+              className="translate-y-0 opacity-100 transition-all duration-300 md:translate-y-2 md:opacity-0 md:group-hover:translate-y-0 md:group-hover:opacity-100 focus-visible:opacity-100 focus-visible:translate-y-0"
             >
-              <Play className="size-3.5 fill-current" />
+              <Play className="size-3 fill-current sm:size-3.5" />
               Trailer
             </Button>
           </div>
         )}
       </div>
 
-      <CardHeader>
-        <CardTitle className="text-white "><p className=" h-[100px] p-1">{title}</p></CardTitle>
+      <CardHeader className="px-2 pb-1 pt-2 sm:px-3 sm:pt-3">
+        <CardTitle className="text-white">
+          <p className="line-clamp-2 min-h-[2.5rem] break-words p-1 text-sm leading-snug sm:min-h-[3rem] sm:text-base">
+            {title}
+          </p>
+        </CardTitle>
       </CardHeader>
 
-      <CardContent className="bg-yellow-500">
-        <p className="text-black">
+      <CardContent className="mt-auto bg-yellow-500 px-2 py-2 sm:px-3">
+        <p className="truncate text-sm text-black sm:text-base">
           {year} · ⭐ {rating.toFixed(1)}
         </p>
       </CardContent>

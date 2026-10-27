@@ -145,11 +145,11 @@ const TrendingSeries = () => {
           }}
           className="w-full"
         >
-          <CarouselContent>
+          <CarouselContent className="-ml-3 sm:-ml-4">
             {series.map((serie) => (
               <CarouselItem
                 key={serie.id}
-                className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5"
+                className="basis-[46%] pl-3 min-[480px]:basis-[34%] sm:pl-4 md:basis-1/4 lg:basis-1/5 xl:basis-1/6"
               >
                 <MovieCard
                   id={serie.id}
@@ -173,8 +173,8 @@ const TrendingSeries = () => {
             ))}
           </CarouselContent>
 
-          <CarouselPrevious />
-          <CarouselNext />
+          <CarouselPrevious  className="hidden md:inline-flex" />
+          <CarouselNext  className="hidden md:inline-flex" />
         </Carousel>
 
         <TrailerModal
@@ -195,11 +195,11 @@ const TrendingSeries = () => {
           }}
           className="w-full"
         >
-          <CarouselContent>
+          <CarouselContent className="-ml-3 sm:-ml-4">
             {topRatedSeries.map((serie) => (
               <CarouselItem
                 key={serie.id}
-                className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5"
+                className="basis-[46%] pl-3 min-[480px]:basis-[34%] sm:pl-4 md:basis-1/4 lg:basis-1/5 xl:basis-1/6"
               >
                 <MovieCard
                   id={serie.id}
@@ -223,8 +223,8 @@ const TrendingSeries = () => {
             ))}
           </CarouselContent>
 
-          <CarouselPrevious />
-          <CarouselNext />
+          <CarouselPrevious  className="hidden md:inline-flex" />
+          <CarouselNext  className="hidden md:inline-flex" />
         </Carousel>
 
         <TrailerModal
